@@ -64,7 +64,6 @@ void addSong(Playlist* list){
     song->next = NULL;
     list->count++;
 
-    printf("Displaying current playlist:\n");
     displayList(list);
 }
 
@@ -76,7 +75,7 @@ void deleteSong(Playlist* list){
     char* artist;
     scanf("%ms", &title);
     scanf("%ms", &artist);
-int i;
+    int i;
     int found = 0;
     for(i = 0; i < list->count; i++){
 	if(strcmp(title, curr->title) == 0 && strcmp(artist, curr->artist) == 0){
@@ -94,6 +93,9 @@ int i;
 
     if(i == 0){
 	list->head = curr->next;
+	if(list->head == NULL){
+	    list->tail = NULL;
+	}
     }
     else if(i == list->count - 1){
 	list->tail = prev;
@@ -105,6 +107,15 @@ int i;
     list->count--;
     printf("Printing current list\n");
     displayList(list);
+
+    free(title);
+    free(artist);
+    free(curr->artist);
+    free(curr->title);
+    free(curr);
+}
+
+void exportToFile(Playlist* list){
 
 }
 
@@ -140,6 +151,9 @@ int main(){
 	}
 	else if(choice == 4){
 	    displayList(list);
+	}
+	else if(choice == 5){
+	    exportToFile(list);
 	}
 
     }while(choice != 6);
