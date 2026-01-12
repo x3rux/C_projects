@@ -116,7 +116,18 @@ void deleteSong(Playlist* list){
 }
 
 void exportToFile(Playlist* list){
-
+    FILE* fplaylist = fopen("playlist.csv", "a");
+    if(fplaylist == NULL){
+	printf("Error opening file!\n");
+	return;
+    }
+    
+    Song* curr = list->head;
+    for(int i = 0; i < list->count; i++){
+	fprintf(fplaylist, "%s,%s,%0.0f\n", curr->title, curr->artist, curr->duration );
+	curr = curr->next;
+    }
+    printf("Successfully exported playlist to 'playlist.csv'\n");
 }
 
 int main(){

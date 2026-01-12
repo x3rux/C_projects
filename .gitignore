@@ -6,3 +6,6 @@
 
 #sys files
 .DS_Store
+
+#misc
+*.csv
