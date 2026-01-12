@@ -1,0 +1,8 @@
+#binaries
+*_bin
+
+#object file
+*.o
+
+#sys files
+.DS_Store
