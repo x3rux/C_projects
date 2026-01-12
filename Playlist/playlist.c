@@ -68,6 +68,46 @@ void addSong(Playlist* list){
     displayList(list);
 }
 
+void deleteSong(Playlist* list){
+    Song* prev = NULL;
+    Song* curr = list->head;
+    printf("Enter title and artist name for song to delete:\n");
+    char* title;
+    char* artist;
+    scanf("%ms", &title);
+    scanf("%ms", &artist);
+int i;
+    int found = 0;
+    for(i = 0; i < list->count; i++){
+	if(strcmp(title, curr->title) == 0 && strcmp(artist, curr->artist) == 0){
+	    found = 1;
+	    break;
+	}
+	prev = curr;
+	curr = curr->next;
+    }
+
+    if(found == 0){
+	printf("Song not found!\n");
+	return;
+    }
+
+    if(i == 0){
+	list->head = curr->next;
+    }
+    else if(i == list->count - 1){
+	list->tail = prev;
+	list->tail->next = NULL;
+    }
+    else{
+	prev->next = curr->next;
+    }
+    list->count--;
+    printf("Printing current list\n");
+    displayList(list);
+
+}
+
 int main(){
 
     Playlist* list = calloc(1, sizeof(Playlist));
@@ -94,6 +134,9 @@ int main(){
 	}
 	else if(choice == 2){
 	    searchSong(list);
+	}
+	else if(choice == 3){
+	    deleteSong(list);
 	}
 	else if(choice == 4){
 	    displayList(list);
