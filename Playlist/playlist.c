@@ -44,27 +44,40 @@ void searchSong(Playlist* list){
     printf("Song not found!\n");
 }
 
+void appendSongNode(Playlist* list, char* title, char* artist, float duration){
+    Song* song = malloc(1*sizeof(Song));
+    song->title    = strdup(title);
+    song->artist   = strdup(artist);
+    song->duration = duration;
+
+    if(list->count == 0){
+        list->head = song;
+        list->tail = song;
+    }
+    else{
+        list->tail->next = song;
+        list->tail = song;
+    }
+    song->next = NULL;
+    list->count++;
+}
+
 void addSong(Playlist* list){
     Song* song = malloc(1*sizeof(Song));
     printf("Enter song details in order:\nTitle\nArtist\nDuration\n");
     //ms is not posix compliant it automatically allocates mem on runtime
     //without this would have to make a separate readline() function 
-    scanf("%ms", &song->title);
-    scanf("%ms", &song->artist);
-    scanf("%f", &song->duration);
-
-    if(list->count == 0){
-	list->head = song;
-	list->tail = song;
-    }
-    else{
-	list->tail->next = song;
-	list->tail = song;
-    }
-    song->next = NULL;
-    list->count++;
-
+    char* title;
+    char* artist;
+    float duration;
+    scanf("%ms", &title);
+    scanf("%ms", &artist);
+    scanf("%f", &duration);
+    
+    appendSongNode(list, title, artist, duration);
     displayList(list);
+    free(title);
+    free(artist);
 }
 
 void deleteSong(Playlist* list){
@@ -130,6 +143,26 @@ void exportToFile(Playlist* list){
     printf("Successfully exported playlist to 'playlist.csv'\n");
 }
 
+void importFromFile(char* filename, Playlist* list){
+    FILE* fsongs = fopen(filename, "r");
+    if(fsongs == NULL){
+        printf("Error opening file!\n");
+        exit(-1);
+    }
+
+    char line[1024];
+    char* delims = ",\n";
+    while(fgets(line, sizeof(line), fsongs) != NULL){
+        char* title = strtok(line, delims);
+        char* artist = strtok(NULL, delims);
+        float duration = atof(strtok(NULL, delims)); 
+
+        appendSongNode(list, title, artist, duration);
+    }
+    printf("Printing current list:\n");
+    displayList(list);
+}
+
 int main(){
 
     Playlist* list = calloc(1, sizeof(Playlist));
@@ -147,8 +180,9 @@ int main(){
 	printf("2. Search for a song\n");
 	printf("3. Delete a song\n");
 	printf("4. Display playlist\n");
-	printf("5. Export to file\n");
-	printf("6. Exit\n");
+	printf("5. Import from file\n");
+	printf("6. Export to file\n");
+	printf("7. Exit\n");
 
 	scanf("%d", &choice);
 	if(choice == 1){
@@ -164,10 +198,14 @@ int main(){
 	    displayList(list);
 	}
 	else if(choice == 5){
+            char* filename = "playlist.csv";
+	    importFromFile(filename, list);
+	}
+	else if(choice == 6){
 	    exportToFile(list);
 	}
 
-    }while(choice != 6);
+    }while(choice != 7);
 
     return 0;
 }
