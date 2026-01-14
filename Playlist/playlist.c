@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ADD_FLAG "--add"
-
-
 typedef struct Song{
     char* title;
     char* artist;
