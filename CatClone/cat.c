@@ -1,25 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void printFD(FILE* fd){
+    int c;
+    while((c = getc(fd)) != EOF){
+        putc(c, stdout);
+    }
+}
+
 int main(int argc, const char** argv) {
   
-    int fileCount = argc-1;
-    FILE** fd = (FILE**)malloc(argc * sizeof(FILE**));
-
     if(argc == 1){
-        fd[0] = stdin;
-        fileCount = 1;
+        printFD(stdin);
+        return 0;
     }
     else{
-        for(int i = 0; i < fileCount; i++) {
-            fd[i] = fopen(argv[i+1], "r");
-        }
-    }
-  
-    for (int i = 0;  i < fileCount;  i++) {
-        char c;
-        while((c = getc(fd[i])) != EOF){
-            putc(c, stdout);
+        for (int i = 0; i < argc-1; i++) {
+            FILE* fd = fopen(argv[i+1], "r");
+            if(fd == NULL){
+                // printf("File doesn't exist: %s\n", argv[i+1]);
+                fprintf(stderr, "File doesn't exist: %s\n", argv[i+1]);
+                continue;
+            }
+            printFD(fd);
+            fclose(fd);
         }
     }
 
