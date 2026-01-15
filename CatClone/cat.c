@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 void printFD(FILE* fd){
     int c;
@@ -8,18 +9,23 @@ void printFD(FILE* fd){
     }
 }
 
-int main(int argc, const char** argv) {
-  
+int cat(int argc, const char* argv[]){
+    int err = 0;
     if(argc == 1){
         printFD(stdin);
         return 0;
     }
     else{
-        for (int i = 0; i < argc-1; i++) {
-            FILE* fd = fopen(argv[i+1], "r");
+        for (int i = 1; i < argc; i++) {
+            if(strcmp(argv[i], "-") == 0){
+                printFD(stdin); 
+                continue;
+            }
+
+            FILE* fd = fopen(argv[i], "rb");
             if(fd == NULL){
-                // printf("File doesn't exist: %s\n", argv[i+1]);
-                fprintf(stderr, "File doesn't exist: %s\n", argv[i+1]);
+                err = 1;
+                fprintf(stderr, "%s: %s\n", argv[i], strerror(errno));
                 continue;
             }
             printFD(fd);
@@ -27,5 +33,12 @@ int main(int argc, const char** argv) {
         }
     }
 
+    if(err == 1){
+        return 1;
+    }
     return 0;
+}
+
+int main(int argc, const char* argv[]) {
+    return cat(argc, argv);  
 }
