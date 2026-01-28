@@ -2,12 +2,12 @@
 #include <stdlib.h>
 
 void usage(){
-    printf("USAGE: <source> <destination>\n");
+    fprintf(stderr, "USAGE: <source> <destination>\n");
 }
 
 int main(int argc, const char** argv){
     
-    if(argc <= 1){
+    if(argc < 3){
         usage();
         exit(-1);
     }
@@ -15,14 +15,16 @@ int main(int argc, const char** argv){
     FILE* src = fopen(argv[1], "rb");
     FILE* dest = fopen(argv[2], "wb");
     if(src == NULL || dest == NULL){
-        printf("Error opening files!\n");
+      fprintf(stderr,"Error reading files!\n");
         exit(-1);
     }
 
-    char c;
+    int c;
     while((c = getc(src)) != EOF){
         putc(c, dest);
     }
-
+    
+    fclose(src);
+    fclose(dest);
     return 0;
 }
