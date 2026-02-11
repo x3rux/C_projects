@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 char** tokenize(char* line){
     char** args = calloc(64, sizeof(char*));
@@ -29,14 +32,15 @@ int main(){
         nread = getline(&line, &size, stdin);
 
         char** args = tokenize(line);
-        for (int i = 0;; i++) {
-            printf("%s", args[i]);
-            if (args[i] == NULL){
-                free(args);
-                break;
-            }
+        pid_t pid = fork();
+        if (pid == 0){
+            execvp(args[0], args);
+            exit(1);
         }
-        
+        else{
+            wait(NULL);
+        }
+
 
         if (nread == EOF) break;
     }
