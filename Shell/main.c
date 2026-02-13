@@ -5,6 +5,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+// BUILTIN COMMANDS
+#define CD "cd"
+
 char** tokenize(char* line){
     char** args = calloc(64, sizeof(char*));
     char* delims = " \n";
@@ -32,6 +35,14 @@ int main(){
         nread = getline(&line, &size, stdin);
 
         char** args = tokenize(line);
+
+        if(strcmp(args[0],CD) == 0) {
+            if(chdir(args[1]) != 0){
+                fprintf(stderr, "ERROR: unable to change directory to %s\n", args[1]);
+            }
+            continue;
+        }
+
         pid_t pid = fork();
         if (pid == 0){
             execvp(args[0], args);
