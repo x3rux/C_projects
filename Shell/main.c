@@ -31,7 +31,14 @@ int main(){
     ssize_t nread;
 
     while(1) {
-        printf("myshell>>");
+        char* cwd = getcwd(NULL, 0); // using this i don't have dynamically alloc memory myself
+        if (cwd){
+            printf("%s>> ", cwd);
+            free(cwd);
+        }
+        else{
+            perror("cwd failed:");
+        }
         nread = getline(&line, &size, stdin);
         if (nread == EOF) break;
 
@@ -46,7 +53,7 @@ int main(){
                 fprintf(stderr, "myshell: expected argument to \"cd\"\n");
             }
             else if(chdir(args[1]) != 0){
-                fprintf(stderr, "ERROR: unable to change directory to %s\n", args[1]);
+                perror("myshell: cd");
             }
             free(args);
             continue;
