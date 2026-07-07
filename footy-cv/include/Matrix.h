@@ -10,6 +10,10 @@ typedef struct{
 }Matrix;
 
 Matrix* matrix_allocate(size_t rows, size_t cols);
+Matrix* matrix_dot(Matrix* a, Matrix* b);
+Matrix* matrix_add(Matrix* a, Matrix* b);
+
+void matrix_sigmoid(Matrix* m);
 void matrix_free(Matrix* m);
 void matrix_print(Matrix* m);
 
