@@ -4,6 +4,13 @@
 #include <math.h>
 #include "../include/Matrix.h"
 
+void matrix_free(Matrix *m){
+    if(m == NULL) return; //because should not free a null pointer
+
+    free(m->data);
+    free(m);
+}
+
 Matrix* matrix_allocate(size_t rows, size_t cols){
     Matrix* m = malloc(sizeof(Matrix));
     if(m == NULL) return NULL;
@@ -74,11 +81,48 @@ void matrix_sigmoid(Matrix *m){
     }
 }
 
-void matrix_free(Matrix *m){
-    if(m == NULL) return; //because should not free a null pointer
+Matrix* matrix_transpose(Matrix *m){
+    Matrix* t = matrix_allocate(m->cols, m->rows);
+    if(t == NULL) return NULL;
 
-    free(m->data);
-    free(m);
+    for (size_t i = 0; i < m->rows; i++) {
+        for (size_t j = 0; j < m->cols; j++) {
+            t->data[j * t->cols + i] = m->data[i * m->cols + j];
+        }
+    }
+
+    return t;
+}
+
+void matrix_scale(Matrix *m, float scalar){
+    if(m == NULL) return;
+
+    for (size_t i = 0; i < m->rows * m->cols; i++) {
+        m->data[i] *= scalar;
+    }
+}
+Matrix* matrix_subtract(Matrix* a, Matrix* b){
+    if(a == NULL || b == NULL) return NULL;
+    if(a->rows != b->rows || a->cols != b->cols){
+        printf("ERROR: Incompatible matrices!\n");
+        return NULL;
+    }
+
+    Matrix* c = matrix_allocate(a->rows, a->cols);
+    if(c == NULL) return NULL;
+
+    for (size_t i = 0; i < c->rows * c->cols; i++) {
+        c->data[i] = a->data[i] - b->data[i];
+    }
+
+    return c;   
+}
+void matrix_sigmoid_derivative(Matrix *m){
+    if(m == NULL) return;
+
+    for (size_t i = 0; i < m->rows * m->cols; i++) {
+        m->data[i] = m->data[i] * (1.0f - m->data[i]);
+    }
 }
 
 void matrix_print(Matrix *m){
