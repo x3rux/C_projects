@@ -1,59 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/Matrix.h"
+#include "../include/NeuralNet.h"
 
 int main() {
-    printf("--- Allocating Matrices ---\n");
-    Matrix *a = matrix_allocate(2, 3);
-    Matrix *b = matrix_allocate(3, 2);
-
-    if (a == NULL || b == NULL) {
-        printf("Failed to allocate base matrices.\n");
+    printf("--- Initializing Neural Network Layer ---\n");
+    // Create a layer with 3 inputs and 2 outputs (neurons)
+    Layer *l = layer_init(3, 2);
+    if (l == NULL) {
+        printf("Layer allocation failed.\n");
         return 1;
     }
 
-    // Populate Matrix A with 1.0 to 6.0
-    for (size_t i = 0; i < a->rows * a->cols; i++) {
-      a->data[i] = (float)(i + 1);
+    printf("--- Creating Input Data ---\n");
+    // Create a 1x3 input matrix (1 row, 3 columns)
+    Matrix *input = matrix_allocate(1, 3);
+    input->data[0] = 0.5f;
+    input->data[1] = 0.8f;
+    input->data[2] = 0.2f;
+
+    printf("Input Matrix (1x3):\n");
+    matrix_print(input);
+
+    printf("\n--- Running Forward Propagation ---\n");
+    Matrix *output = layer_forward(l, input);
+    
+    if (output != NULL) {
+        printf("Output Matrix (1x2):\n");
+        matrix_print(output);
     }
 
-    // Populate Matrix B with 7.0 to 12.0
-    for (size_t i = 0; i < b->rows * b->cols; i++) {
-        b->data[i] = (float)(i + 7);
-    }
+    printf("\n--- Cleaning Up ---\n");
+    matrix_free(input);
+    matrix_free(output);
+    layer_free(l);
 
-    printf("Matrix A (2x3):\n");
-    matrix_print(a);
-    printf("\nMatrix B (3x2):\n");
-    matrix_print(b);
-
-    printf("\n--- Testing Dot Product ---\n");
-    Matrix *c = matrix_dot(a, b);
-    if (c != NULL) {
-        printf("Matrix C = A dot B (2x2):\n");
-        matrix_print(c);
-    }
-
-    printf("\n--- Testing Matrix Addition ---\n");
-    // We add C to itself since they have identical dimensions
-    Matrix *d = matrix_add(c, c);
-    if (d != NULL) {
-        printf("Matrix D = C + C:\n");
-        matrix_print(d);
-    }
-
-    printf("\n--- Testing Sigmoid Activation ---\n");
-    // We run sigmoid on A in-place
-    matrix_sigmoid(a);
-    printf("Matrix A after Sigmoid:\n");
-    matrix_print(a);
-
-    printf("\n--- Cleaning Up Memory ---\n");
-    matrix_free(a);
-    matrix_free(b);
-    matrix_free(c);
-    matrix_free(d);
-
-    printf("All tests complete. Memory freed.\n");
+    printf("Forward pass complete. Memory freed.\n");
     return 0;
 }

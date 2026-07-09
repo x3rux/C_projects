@@ -1,5 +1,6 @@
 #binaries
 *_bin
+*_engine
 
 #object file
 *.o
