@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include "../include/Matrix.h"
 
 void matrix_free(Matrix *m){
@@ -101,6 +102,7 @@ void matrix_scale(Matrix *m, float scalar){
         m->data[i] *= scalar;
     }
 }
+
 Matrix* matrix_subtract(Matrix* a, Matrix* b){
     if(a == NULL || b == NULL) return NULL;
     if(a->rows != b->rows || a->cols != b->cols){
@@ -117,6 +119,34 @@ Matrix* matrix_subtract(Matrix* a, Matrix* b){
 
     return c;   
 }
+
+Matrix* matrix_clone(Matrix* m){
+    if(m == NULL) return NULL;
+
+    Matrix* c = matrix_allocate(m->rows, m->cols);
+    if(c == NULL) return NULL;
+    memcpy(c->data, m->data, c->rows * c->cols * sizeof(float));
+
+    return c;
+}
+
+Matrix* matrix_multiply(Matrix* a, Matrix* b){// this is eleent by element multiplication
+    if(a == NULL || b == NULL) return NULL;
+    if(a->rows != b->rows || a->cols != b->cols){
+        printf("ERROR: Incompatible matrices!\n");
+        return NULL;
+    }
+
+    Matrix* c = matrix_allocate(a->rows, a->cols);
+    if(c == NULL) return NULL;
+
+    for (size_t i = 0; i < c->rows * c->cols; i++) {
+        c->data[i] = a->data[i] * b->data[i];
+    }
+
+    return c;
+}
+
 void matrix_sigmoid_derivative(Matrix *m){
     if(m == NULL) return;
 
