@@ -1,71 +1,45 @@
 #include <stdio.h>
-#include "../include/NeuralNet.h"
-#include "../include/Matrix.h"
+#include <stdlib.h>
+#include "../include/Vision.h"
 
 int main() {
-    printf("--- Building the OR Gate Neural Network ---\n");
+    printf("--- Initializing Vision Engine ---\n");
     
-    // 1. Initialize the Layer (2 inputs, 1 output)
-    Layer *layer = layer_init(2, 1);
-    if (layer == NULL) return 1;
+    // 1. Turn on the webcam (Index 0 is usually the default camera)
+    void* camera = vision_init(0);
+    
+    if (camera == NULL) {
+        printf("ERROR: Could not open the webcam. (Is it plugged in or in use?)\n");
+        return 1;
+    }
+    printf("Webcam successfully opened! Hardware is active.\n");
 
-    // 2. Prepare the Training Data
-    Matrix *inputs[4];
-    Matrix *targets[4];
-
-    for (int i = 0; i < 4; i++) {
-        inputs[i] = matrix_allocate(1, 2);
-        targets[i] = matrix_allocate(1, 1);
+    // 2. Capture a frame (We'll shrink it to 64x64 for the neural network)
+    int width = 64;
+    int height = 64;
+    printf("Capturing a %dx%d frame...\n", width, height);
+    
+    float* frame_data = vision_capture_frame(camera, width, height);
+    
+    if (frame_data != NULL) {
+        printf("Frame captured successfully!\n");
+        
+        // Print a few pixels from the exact center of the image to prove data is flowing
+        int center_index = (height / 2) * width + (width / 2);
+        printf("Pixel data at center [32,32]: %f (0.0 is black, 1.0 is white)\n", frame_data[center_index]);
+        printf("Pixel data at [32,33]: %f\n", frame_data[center_index + 1]);
+        printf("Pixel data at [32,34]: %f\n", frame_data[center_index + 2]);
+        
+        // Always free the data allocated by the bridge!
+        free(frame_data); 
+    } else {
+        printf("ERROR: Captured an empty frame.\n");
     }
 
-    // [0, 0] -> [0]
-    inputs[0]->data[0] = 0.0f; inputs[0]->data[1] = 0.0f; targets[0]->data[0] = 0.0f;
-    // [0, 1] -> [1]
-    inputs[1]->data[0] = 0.0f; inputs[1]->data[1] = 1.0f; targets[1]->data[0] = 1.0f;
-    // [1, 0] -> [1]
-    inputs[2]->data[0] = 1.0f; inputs[2]->data[1] = 0.0f; targets[2]->data[0] = 1.0f;
-    // [1, 1] -> [1]
-    inputs[3]->data[0] = 1.0f; inputs[3]->data[1] = 1.0f; targets[3]->data[0] = 1.0f;
+    // 3. Teardown
+    printf("Shutting down the webcam...\n");
+    vision_free(camera);
+    printf("Vision Engine offline. Memory secured.\n");
 
-    // 3. The Training Loop (10,000 Epochs)
-    printf("Training for 10,000 epochs...\n");
-    float learning_rate = 0.1f;
-
-    for (int epoch = 0; epoch < 10000; epoch++) {
-        for (int i = 0; i < 4; i++) {
-            // A. Forward Pass (Make a guess)
-            Matrix *prediction = layer_forward(layer, inputs[i]);
-            
-            // B. Calculate Error (Target - Guess)
-            Matrix *error = matrix_subtract(targets[i], prediction);
-            
-            // C. Backward Pass (Learn from the mistake)
-            Matrix *input_error = layer_backward(layer, inputs[i], prediction, error, learning_rate);
-            
-            // D. Cleanup temporary memory for this step
-            matrix_free(prediction);
-            matrix_free(error);
-            matrix_free(input_error);
-        }
-    }
-
-    // 4. The Final Test
-    printf("\n--- Final Predictions after Training ---\n");
-    for (int i = 0; i < 4; i++) {
-        Matrix *final_pred = layer_forward(layer, inputs[i]);
-        printf("Input: [%.0f, %.0f] -> Prediction: %.4f (Target: %.0f)\n", 
-                inputs[i]->data[0], inputs[i]->data[1], 
-                final_pred->data[0], targets[i]->data[0]);
-        matrix_free(final_pred);
-    }
-
-    // 5. Total Teardown
-    for (int i = 0; i < 4; i++) {
-        matrix_free(inputs[i]);
-        matrix_free(targets[i]);
-    }
-    layer_free(layer);
-
-    printf("\nEngine shutdown complete. All memory freed.\n");
     return 0;
 }

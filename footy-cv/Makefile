@@ -1,28 +1,41 @@
-# Compiler Settings
+# Compilers
 CC = gcc
+CXX = g++
+
+# Flags
 CFLAGS = -Wall -Wextra -Iinclude -O2
-LDFLAGS = -lm
+# Use pkg-config to automatically find OpenCV headers
+CXXFLAGS = -Wall -Wextra -Iinclude -O2 $(shell pkg-config --cflags opencv2)
+# Use pkg-config to link the OpenCV libraries
+LDFLAGS = -lm $(shell pkg-config --libs opencv2)
 
 # Directories
 SRC_DIR = src
 BUILD_DIR = build
-INC_DIR = include
 
 # Files
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
+C_SRCS = $(wildcard $(SRC_DIR)/*.c)
+CXX_SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+
+# Object files
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(C_SRCS)) \
+       $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(CXX_SRCS))
+
 TARGET = $(BUILD_DIR)/test_engine
 
-# Default rule to build everything
 all: directories $(TARGET)
 
-# Link the object files into the final executable
+# Final Link (Must use g++ for linking when C++ objects are involved)
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
 
-# Compile .c files into .o (object) files in the build directory
+# Compile C files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile C++ files
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 directories:
 	@mkdir -p $(BUILD_DIR)
