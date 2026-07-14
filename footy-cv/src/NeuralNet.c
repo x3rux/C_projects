@@ -22,7 +22,7 @@ Layer* layer_init(size_t input_size, size_t output_size){
     }
 
     for (size_t i = 0; i < input_size * output_size; i++) {
-        l->weights->data[i] = (float) rand()/RAND_MAX;
+        l->weights->data[i] = (float) (rand()/RAND_MAX) * (0.1f-0.05f);
     }
 
     return l;

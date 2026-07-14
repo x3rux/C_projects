@@ -10,9 +10,9 @@ typedef struct {
 } Network;
 
 Network* network_init(int num_layers, int* layer_sizes);
-
 Matrix* network_forward(Network* net, Matrix* input);
 
+void network_train(Network* net, Matrix* input, Matrix* target, float learning_rate);
 void network_free(Network* net);
 
 #endif

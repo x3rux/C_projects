@@ -1,45 +1,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/Vision.h"
+#include "../include/Network.h"
+#include "../include/Matrix.h"
 
 int main() {
-    printf("--- Initializing Vision Engine ---\n");
+    printf("--- Booting Training Engine ---\n");
+
+    int layers = 2;
+    int layer_sizes[] = {4096, 128, 2};
+    Network* net = network_init(layers, layer_sizes);
     
-    // 1. Turn on the webcam (Index 0 is usually the default camera)
     void* camera = vision_init(0);
-    
-    if (camera == NULL) {
-        printf("ERROR: Could not open the webcam. (Is it plugged in or in use?)\n");
-        return 1;
-    }
-    printf("Webcam successfully opened! Hardware is active.\n");
+    if (!camera) return 1;
 
-    // 2. Capture a frame (We'll shrink it to 64x64 for the neural network)
-    int width = 64;
-    int height = 64;
-    printf("Capturing a %dx%d frame...\n", width, height);
-    
-    float* frame_data = vision_capture_frame(camera, width, height);
-    
-    if (frame_data != NULL) {
-        printf("Frame captured successfully!\n");
-        
-        // Print a few pixels from the exact center of the image to prove data is flowing
-        int center_index = (height / 2) * width + (width / 2);
-        printf("Pixel data at center [32,32]: %f (0.0 is black, 1.0 is white)\n", frame_data[center_index]);
-        printf("Pixel data at [32,33]: %f\n", frame_data[center_index + 1]);
-        printf("Pixel data at [32,34]: %f\n", frame_data[center_index + 2]);
-        
-        // Always free the data allocated by the bridge!
-        free(frame_data); 
-    } else {
-        printf("ERROR: Captured an empty frame.\n");
+    // Define what we want the network to learn
+    // We want the network to look at the webcam and output [1.0, 0.0]
+    Matrix* target = matrix_allocate(1, 2);
+    target->data[0] = 1.0f;
+    target->data[1] = 0.0f;
+
+    int epochs = 100;
+    float learning_rate = 0.1f;
+
+    for (int epoch = 1; epoch <= epochs; epoch++) {
+        // 1. Grab fresh data
+        float* frame_data = vision_capture_frame(camera, 64, 64);
+        Matrix* input = matrix_allocate(1, 4096);
+        for (int i = 0; i < 4096; i++) {
+            input->data[i] = frame_data[i];
+        }
+
+        // 2. See what the network currently guesses
+        Matrix* prediction = network_forward(net, input);
+        printf("Epoch %d | Prediction: [%.4f, %.4f]\n", epoch, prediction->data[0], prediction->data[1]);
+
+        // 3. Run Backpropagation (Train the network to get closer to the target)
+        network_train(net, input, target, learning_rate);
+
+        // 4. Memory cleanup for this loop iteration
+        matrix_free(prediction);
+        matrix_free(input);
+        free(frame_data);
     }
 
-    // 3. Teardown
-    printf("Shutting down the webcam...\n");
+    printf("\nTraining complete. Shutting down...\n");
+    matrix_free(target);
     vision_free(camera);
-    printf("Vision Engine offline. Memory secured.\n");
+    network_free(net);
 
     return 0;
 }
